@@ -5,13 +5,13 @@ using UnityEngine.Events;
 [RequireComponent(typeof(Collider))]
 public class CollisionDetector : MonoBehaviour
 {
-    [SerializeField] private TriggerEvent onTriggerEnter = new TriggerEvent();
+    [SerializeField] private TriggerEvent onTriggerStay = new TriggerEvent();
     [SerializeField] private TriggerEvent onTriggerExit = new TriggerEvent();
     
-    private void OnTriggerEnter(Collider other)
+    private void OnTriggerStay(Collider other)
     {
         // onTriggerStayで指定された処理を実行する
-        onTriggerEnter.Invoke(other);
+        onTriggerStay.Invoke(other);
     }
 
     private void OnTriggerExit(Collider other)

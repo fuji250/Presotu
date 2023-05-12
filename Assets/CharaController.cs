@@ -3,9 +3,14 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.UI;
+using TMPro;
+
 
 public class CharaController : MonoBehaviour
 {
+    public float speed; 
+    
     private NavMeshAgent navMesh;
     
     private Vector3 clickPosition;
@@ -17,10 +22,13 @@ public class CharaController : MonoBehaviour
     private bool stateEnter = true;
 
     private Rigidbody rb;
+
+    private bool existsObstacle = false;
     
     enum State
     {
         search,
+        moving,
         rotating,
         goTowards,
         
@@ -65,17 +73,41 @@ public class CharaController : MonoBehaviour
                 {
                     stateEnter = false;
                     Debug.Log("キョロキョロ");
+                    GameManager.instance.text.text = "キョロキョロ";
+
+                    StartCoroutine("Searching");
+
+                }
+                
+                break;
+            case State.moving:
+                if (stateEnter)
+                {
+                    stateEnter = false;
+                    Debug.Log("トコトコトコトコ");
+                    GameManager.instance.text.text = "トコトコトコトコ";
+                }
+
+                if (existsObstacle)
+                {
+                    ChangeState(State.rotating);
+                    Debug.Log(currentState +"中に壁にぶつかった");
+                    GameManager.instance.text.text = currentState +"中に壁にぶつかった";
+                    
+                    break;
                 }
                 
                 int randomIndex = Random.Range(0, 3);
                 var transform1 = transform;
-                transform1.position += transform1.forward * (2f * Time.deltaTime); 
+                transform1.position += transform1.forward * (speed * Time.deltaTime); 
                 break;
             case State.goTowards:
                 if (stateEnter)
                 {
                     stateEnter = false;
                     Debug.Log("向かってます");
+                    GameManager.instance.text.text = "向かってます";
+
                     navMesh.SetDestination(currentPosition);
                 }
                 
@@ -92,6 +124,8 @@ public class CharaController : MonoBehaviour
                 {
                     stateEnter = false;
                     Debug.Log("キョロキョロ");
+                    GameManager.instance.text.text = "キョロキョロ";
+
                     
                     StartCoroutine("Rotating");
                 }
@@ -105,15 +139,43 @@ public class CharaController : MonoBehaviour
     public void OnDetectObject(Collider collider)
     {
         Debug.Log("壁にぶつかった");
-        ChangeState(State.rotating);
-        
+        GameManager.instance.text.text = "壁にぶつかった";
+
+
+        existsObstacle = true;
+
+        //ChangeState(State.rotating);
     }
     
     // CollisionDetectorのonTriggerExitにセットし、衝突判定を受け取るメソッド
     public void OutDetectObject(Collider collider)
     {
         Debug.Log("壁を避けた");
+        GameManager.instance.text.text = "壁を避けた";
 
+
+        existsObstacle = false;
+
+    }
+
+    IEnumerator Searching()
+    {
+        for (int turn=0; turn<45; turn++)
+        {
+            transform.Rotate(0,1,0);
+            yield return new WaitForSeconds(0.01f);
+        }
+        for (int turn=0; turn<90; turn++)
+        {
+            transform.Rotate(0,-1,0);
+            yield return new WaitForSeconds(0.01f);
+        }
+        for (int turn=0; turn<45; turn++)
+        {
+            transform.Rotate(0,1,0);
+            yield return new WaitForSeconds(0.01f);
+        }
+        ChangeState(State.moving);
     }
     
     IEnumerator Rotating()
@@ -136,7 +198,7 @@ public class CharaController : MonoBehaviour
             }
         }
         
-        ChangeState(State.search);
+        ChangeState(State.moving);
     }
 
     void OnDrawGizmos()

@@ -267,7 +267,7 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.5
-  m_Speed: 3.5
+  m_Speed: 4
   m_Acceleration: 8
   avoidancePriority: 50
   m_AngularSpeed: 120
@@ -293,7 +293,7 @@ Rigidbody:
   m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 0
+  m_Constraints: 36
   m_CollisionDetection: 0
 --- !u!114 &183937669
 MonoBehaviour:
@@ -307,6 +307,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 28b2332a1644f4345b847bc50cab0b69, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  speed: 6
 --- !u!65 &183937670
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -883,7 +884,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 27.17, z: 0}
+  m_LocalPosition: {x: 12.74, y: 27.17, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1033,8 +1034,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: New Text
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 299ac27bba4851c4fb617a49cf8f40ae, type: 2}
+  m_sharedMaterial: {fileID: 775461363445334237, guid: 299ac27bba4851c4fb617a49cf8f40ae, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1117,7 +1118,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1210055697}
-  - component: {fileID: 1210055696}
+  - component: {fileID: 1210055698}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -1125,24 +1126,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1210055696
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1210055695}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fa3d128d276b5d448a142de9828f87af, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  livingRoomPos: {fileID: 0}
-  kitchenPos: {fileID: 0}
-  bedPos: {fileID: 0}
-  toiletPos: {fileID: 0}
-  washHandPos: {fileID: 0}
-  text: {fileID: 1171436838}
 --- !u!4 &1210055697
 Transform:
   m_ObjectHideFlags: 0
@@ -1158,6 +1141,19 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1210055698
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1210055695}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 279d8f7d2453c5746817bb59858e6762, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  text: {fileID: 1171436838}
 --- !u!1 &1387848046
 GameObject:
   m_ObjectHideFlags: 0
@@ -1404,7 +1400,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f95c4e47b9a9c449b28dc1e4d97a130, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  onTriggerEnter:
+  onTriggerStay:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 183937669}
