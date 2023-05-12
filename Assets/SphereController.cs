@@ -4,10 +4,32 @@ using UnityEngine;
 
 public class SphereController : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    public float speed = 3.0f;
+ 
+    void Update()
     {
-        //Destroy(gameObject,1.0f);
+        // Wキー（前方移動）
+        if (Input.GetKey(KeyCode.W))
+        {
+            transform.position += speed * transform.forward * Time.deltaTime;
+        }
+ 
+        // Sキー（後方移動）
+        if (Input.GetKey(KeyCode.S))
+        {
+            transform.position -= speed * transform.forward * Time.deltaTime;
+        }
+ 
+        // Dキー（右移動）
+        if (Input.GetKey(KeyCode.D))
+        {
+            transform.position += speed * transform.right * Time.deltaTime;
+        }
+ 
+        // Aキー（左移動）
+        if (Input.GetKey(KeyCode.A))
+        {
+            transform.position -= speed * transform.right * Time.deltaTime;
+        }
     }
-
 }

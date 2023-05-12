@@ -24,9 +24,14 @@ public class CharaController : MonoBehaviour
     private State currentState = State.search;//現在のステート
     private bool stateEnter = true;
 
-    private Rigidbody rb;
 
+    //前方に障害物があるかどうか
     private bool existsObstacle = false;
+    //人間を探すかどうか
+    private bool isSearchHuman = true;
+    //現在人間を追跡しているかどうか
+    private bool isTracking = true;
+
     
     enum State
     {
@@ -34,6 +39,7 @@ public class CharaController : MonoBehaviour
         moving,
         rotating,
         goTowards,
+        bePleassed,
         doNothing,
         
     }
@@ -42,6 +48,9 @@ public class CharaController : MonoBehaviour
     {
         currentState = newState;
         stateEnter = true;
+        GameManager.instance.state.text = currentState.ToString();
+
+            
     }
     
     // Start is called before the first frame update
@@ -50,7 +59,6 @@ public class CharaController : MonoBehaviour
         navMesh = GetComponent<NavMeshAgent>();
         mainCamera = Camera.main;
         
-        rb = this.GetComponent<Rigidbody> ();  // rigidbodyを取得
 
     }
 
@@ -65,10 +73,9 @@ public class CharaController : MonoBehaviour
             currentPosition = mainCamera.ScreenToWorldPoint(mousePosition);
 
             Debug.Log("LeftClick:"+currentPosition );
-            /*
-            navMesh.isStopped = false;
+            
             ChangeState(State.goTowards);
-            */
+            
             
             humanPosList.Add(currentPosition);
         }
@@ -80,7 +87,7 @@ public class CharaController : MonoBehaviour
                 {
                     stateEnter = false;
                     Debug.Log("キョロキョロ");
-                    GameManager.instance.text.text = "キョロキョロ";
+                    GameManager.instance.message.text = "キョロキョロ";
 
                     StartCoroutine("Searching");
 
@@ -92,38 +99,51 @@ public class CharaController : MonoBehaviour
                 {
                     stateEnter = false;
                     Debug.Log("トコトコトコトコ");
-                    GameManager.instance.text.text = "トコトコトコトコ";
+                    GameManager.instance.message.text = "トコトコトコトコ";
                 }
 
                 if (existsObstacle)
                 {
-                    ChangeState(State.rotating);
                     Debug.Log(currentState +"中に壁にぶつかった");
-                    GameManager.instance.text.text = currentState +"中に壁にぶつかった";
+                    GameManager.instance.message.text = currentState +"中に壁にぶつかった";
+                    ChangeState(State.rotating);
+
                     
                     break;
                 }
                 
-                int randomIndex = Random.Range(0, 3);
                 var transform1 = transform;
                 transform1.position += transform1.forward * (speed * Time.deltaTime); 
                 break;
+            
             case State.goTowards:
                 if (stateEnter)
                 {
                     stateEnter = false;
+                    navMesh.isStopped = false;
                     Debug.Log("向かってます");
-                    GameManager.instance.text.text = "向かってます";
 
-                    navMesh.SetDestination(currentPosition);
+                    GameManager.instance.message.text = "向かってます";
+
+
+                    //目標地点がリセットされた状態なら新しく目的地を
+                    if (currentPosition != Vector3.zero)
+                    {
+
+                    }
                 }
-                
-                if (navMesh.remainingDistance <= 0.2f && !navMesh.pathPending)
+                navMesh.SetDestination(currentPosition);
+
+                if (navMesh.remainingDistance <= 3f && !navMesh.pathPending)
                 {
-                    ChangeState(State.search);
+                    Debug.Log("人にたどり着いた");
+
+                    ChangeState(State.bePleassed);
                     navMesh.isStopped = true;
                     return;
                 }
+                Debug.Log(navMesh.remainingDistance);
+
                 break;
             
             case State.rotating:
@@ -131,10 +151,22 @@ public class CharaController : MonoBehaviour
                 {
                     stateEnter = false;
                     Debug.Log("キョロキョロ");
-                    GameManager.instance.text.text = "キョロキョロ";
+
+                    GameManager.instance.message.text = "キョロキョロ";
 
                     
                     StartCoroutine("Rotating");
+                }
+                
+                break;
+            
+            case State.bePleassed:
+                if (stateEnter)
+                {
+                    stateEnter = false;
+                    Debug.Log("嬉しい！");
+                    GameManager.instance.message.text = "嬉しい!";
+                    StartCoroutine("Turn");
                 }
                 
                 break;
@@ -144,7 +176,7 @@ public class CharaController : MonoBehaviour
                 {
                     stateEnter = false;
                     Debug.Log("何もしません");
-                    GameManager.instance.text.text = "何もしません";
+                    GameManager.instance.message.text = "何もしません";
                 }
                 
                 break;
@@ -155,46 +187,58 @@ public class CharaController : MonoBehaviour
     // CollisionDetectorのonTriggerStayにセットし、衝突判定を受け取るメソッド
     public void OnDetectObject(Collider collider)
     {
-        Debug.Log("壁にぶつかった");
-        GameManager.instance.text.text = "壁にぶつかった";
+        if (collider.gameObject.layer == 9)
+        {
+            
+            Debug.Log("壁にぶつかった");
+
+            GameManager.instance.message.text = "壁にぶつかった";
 
 
-        existsObstacle = true;
+            existsObstacle = true;
 
-        //ChangeState(State.rotating);
+            //ChangeState(State.rotating);
+        }
     }
     
     // CollisionDetectorのonTriggerExitにセットし、衝突判定を受け取るメソッド
     public void OutDetectObject(Collider collider)
     {
-        Debug.Log("壁を避けた");
-        GameManager.instance.text.text = "壁を避けた";
+        if (collider.gameObject.layer == 9)
+        {
+            Debug.Log("壁を避けた");
+
+            GameManager.instance.message.text = "壁を避けた";
 
 
-        existsObstacle = false;
-
+            existsObstacle = false;
+        }
     }
     
     public void OnDetectHuman(Collider collider)
     {
-        if (collider.gameObject.layer == 8)
+        if (isSearchHuman)
         {
-            Debug.Log("人を見つけた");
-            GameManager.instance.text.text = "人を見つけた";
-
-            // 衝突位置を取得する
-            Vector3 hitPos = collider.transform.position;
-            navMesh.SetDestination(hitPos);
-            
-            if (navMesh.remainingDistance <= 50f && !navMesh.pathPending)
+            if (collider.gameObject.layer == 8)
             {
-                Debug.Log("人にたどり着いた");
+                // 衝突位置を取得する
+                Vector3 hitPos = collider.transform.position;
+                //navMesh.SetDestination(hitPos);
+                currentPosition = hitPos;
+                
+                //既に人間を追跡しているなら以下の処理を飛ばす
+                if (currentState == State.goTowards || currentState == State.bePleassed)
+                {
+                    return;
+                }
+                
+                Debug.Log("人を見つけた");
 
-                ChangeState(State.doNothing);
+                GameManager.instance.message.text = "人を見つけた";
+                
+                ChangeState(State.goTowards);
             }
         }
-        
-        
     }
 
     IEnumerator Searching()
@@ -216,6 +260,21 @@ public class CharaController : MonoBehaviour
         }
         ChangeState(State.moving);
     }
+    IEnumerator Turn()
+    {
+        isSearchHuman = false;
+        for (int turn=0; turn<140; turn++)
+        {
+            transform.Rotate(0,3,0);
+            yield return new WaitForSeconds(0.01f);
+        }
+        isSearchHuman = true;
+
+        //追跡位置をリセットする
+        currentPosition = Vector3.zero;
+        ChangeState(State.search);
+
+    }
     
     IEnumerator Rotating()
     {
@@ -236,6 +295,7 @@ public class CharaController : MonoBehaviour
                 yield return new WaitForSeconds(0.01f);
             }
         }
+
         
         ChangeState(State.moving);
     }

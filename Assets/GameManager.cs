@@ -21,6 +21,7 @@ public class GameManager : MonoBehaviour
         }
     }
     
-    public TextMeshProUGUI text;
+    public TextMeshProUGUI message;
+    public TextMeshProUGUI state;
 
 }
