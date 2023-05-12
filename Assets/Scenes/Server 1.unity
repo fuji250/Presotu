@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028305, g: 0.22571313, b: 0.3069213, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -399,16 +399,28 @@ PrefabInstance:
       value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 5307589537679161099, guid: 6ea742e7850a0fc4fbc2e0f65e1ae090, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5307589537679161099, guid: 6ea742e7850a0fc4fbc2e0f65e1ae090, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5307589537679161099, guid: 6ea742e7850a0fc4fbc2e0f65e1ae090, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5307589537679161099, guid: 6ea742e7850a0fc4fbc2e0f65e1ae090, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -1.6104801
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5307589537679161099, guid: 6ea742e7850a0fc4fbc2e0f65e1ae090, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.049201928
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5307589537679161099, guid: 6ea742e7850a0fc4fbc2e0f65e1ae090, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.006965928
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5307589537679161099, guid: 6ea742e7850a0fc4fbc2e0f65e1ae090, type: 3}
       propertyPath: m_LocalRotation.w
@@ -437,6 +449,10 @@ PrefabInstance:
     - target: {fileID: 5307589537679161099, guid: 6ea742e7850a0fc4fbc2e0f65e1ae090, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5307589537679161099, guid: 6ea742e7850a0fc4fbc2e0f65e1ae090, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6ea742e7850a0fc4fbc2e0f65e1ae090, type: 3}

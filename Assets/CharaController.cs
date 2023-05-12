@@ -11,6 +11,9 @@ public class CharaController : MonoBehaviour
 {
     public float speed; 
     
+    private　List<Vector3> humanPosList = new List<Vector3>();
+    
+    
     private NavMeshAgent navMesh;
     
     private Vector3 clickPosition;
@@ -31,8 +34,8 @@ public class CharaController : MonoBehaviour
         moving,
         rotating,
         goTowards,
+        doNothing,
         
-
     }
     
     void ChangeState(State newState)
@@ -62,8 +65,12 @@ public class CharaController : MonoBehaviour
             currentPosition = mainCamera.ScreenToWorldPoint(mousePosition);
 
             Debug.Log("LeftClick:"+currentPosition );
+            /*
             navMesh.isStopped = false;
             ChangeState(State.goTowards);
+            */
+            
+            humanPosList.Add(currentPosition);
         }
 
         switch (currentState)
@@ -131,6 +138,16 @@ public class CharaController : MonoBehaviour
                 }
                 
                 break;
+            
+            case State.doNothing:
+                if (stateEnter)
+                {
+                    stateEnter = false;
+                    Debug.Log("何もしません");
+                    GameManager.instance.text.text = "何もしません";
+                }
+                
+                break;
         }
     }
     
@@ -156,6 +173,28 @@ public class CharaController : MonoBehaviour
 
         existsObstacle = false;
 
+    }
+    
+    public void OnDetectHuman(Collider collider)
+    {
+        if (collider.gameObject.layer == 8)
+        {
+            Debug.Log("人を見つけた");
+            GameManager.instance.text.text = "人を見つけた";
+
+            // 衝突位置を取得する
+            Vector3 hitPos = collider.transform.position;
+            navMesh.SetDestination(hitPos);
+            
+            if (navMesh.remainingDistance <= 50f && !navMesh.pathPending)
+            {
+                Debug.Log("人にたどり着いた");
+
+                ChangeState(State.doNothing);
+            }
+        }
+        
+        
     }
 
     IEnumerator Searching()

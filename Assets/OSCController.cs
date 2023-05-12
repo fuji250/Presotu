@@ -22,9 +22,12 @@ public class OSCController : MonoBehaviour
         {
             float X = float.Parse(message.values[0].ToString());
             float Y = float.Parse(message.values[1].ToString());
-            
-            Debug.Log(X + "," + Y);
-            Instantiate(mark, new Vector3( X * num, Y * num, 0.0f), Quaternion.identity);
+
+            if (X != 0 && Y != 0)
+            {
+                Debug.Log(X + "," + Y);
+                Instantiate(mark, new Vector3( X * num, Y * num, 0.0f), Quaternion.identity);
+            }
         }
     }
 
