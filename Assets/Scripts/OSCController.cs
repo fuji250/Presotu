@@ -61,7 +61,7 @@ public class OSCController : MonoBehaviour
                     
                     return;
                 }
-                Debug.Log(X + "," + Y);
+                //Debug.Log(X + "," + Y);
 
                 Instantiate(mark, new Vector3( X * num, 0.0f, Y * num), Quaternion.identity);
             
