@@ -37,9 +37,11 @@ public class CharaController : MonoBehaviour
     {
         search,
         moving,
-        rotating,
+        avoid,
         goTowards,
         bePleassed,
+        goHome,
+
         doNothing,
         
     }
@@ -65,6 +67,7 @@ public class CharaController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        
         if (Input.GetMouseButtonDown(0))
         {
             //var distance = Vector3.Distance(player.transform.position, mainCamera.transform.position);
@@ -106,7 +109,7 @@ public class CharaController : MonoBehaviour
                 {
                     Debug.Log(currentState +"中に壁にぶつかった");
                     GameManager.instance.message.text = currentState +"中に壁にぶつかった";
-                    ChangeState(State.rotating);
+                    ChangeState(State.avoid);
 
                     
                     break;
@@ -142,20 +145,20 @@ public class CharaController : MonoBehaviour
                     navMesh.isStopped = true;
                     return;
                 }
-                Debug.Log(navMesh.remainingDistance);
+                //Debug.Log(navMesh.remainingDistance);
 
                 break;
             
-            case State.rotating:
+            case State.avoid:
                 if (stateEnter)
                 {
                     stateEnter = false;
-                    Debug.Log("キョロキョロ");
+                    Debug.Log("避ける");
 
-                    GameManager.instance.message.text = "キョロキョロ";
+                    GameManager.instance.message.text = "避ける";
 
                     
-                    StartCoroutine("Rotating");
+                    StartCoroutine("Avoid");
                 }
                 
                 break;
@@ -167,6 +170,16 @@ public class CharaController : MonoBehaviour
                     Debug.Log("嬉しい！");
                     GameManager.instance.message.text = "嬉しい!";
                     StartCoroutine("Turn");
+                }
+                
+                break;
+            
+            case State.goHome:
+                if (stateEnter)
+                {
+                    stateEnter = false;
+                    Debug.Log("お家に帰る");
+                    GameManager.instance.message.text = "お家に帰る";
                 }
                 
                 break;
@@ -192,10 +205,10 @@ public class CharaController : MonoBehaviour
             
             Debug.Log("壁にぶつかった");
 
-            GameManager.instance.message.text = "壁にぶつかった";
+            //GameManager.instance.message.text = "壁にぶつかった";
 
 
-            existsObstacle = true;
+            //existsObstacle = true;
 
             //ChangeState(State.rotating);
         }
@@ -208,7 +221,7 @@ public class CharaController : MonoBehaviour
         {
             Debug.Log("壁を避けた");
 
-            GameManager.instance.message.text = "壁を避けた";
+            //GameManager.instance.message.text = "壁を避けた";
 
 
             existsObstacle = false;
@@ -221,6 +234,9 @@ public class CharaController : MonoBehaviour
         {
             if (collider.gameObject.layer == 8)
             {
+                navMesh.isStopped = false;
+
+                
                 // 衝突位置を取得する
                 Vector3 hitPos = collider.transform.position;
                 //navMesh.SetDestination(hitPos);
@@ -241,6 +257,7 @@ public class CharaController : MonoBehaviour
         }
     }
 
+    //キョロキョロと周りを見渡す
     IEnumerator Searching()
     {
         for (int turn=0; turn<45; turn++)
@@ -260,6 +277,8 @@ public class CharaController : MonoBehaviour
         }
         ChangeState(State.moving);
     }
+    
+    //人の近くにたどり着くと回転して喜ぶ
     IEnumerator Turn()
     {
         isSearchHuman = false;
@@ -276,7 +295,8 @@ public class CharaController : MonoBehaviour
 
     }
     
-    IEnumerator Rotating()
+    //右か左にランダムに避ける
+    IEnumerator Avoid()
     {
         int randomIndex = Random.Range(0, 2);
         if (randomIndex == 0)
