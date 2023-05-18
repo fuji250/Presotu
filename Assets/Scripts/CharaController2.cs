@@ -190,7 +190,7 @@ public class CharaController2 : MonoBehaviour
                     navMesh.SetDestination(Vector3.zero);
                 }
 
-                if (navMesh.remainingDistance <= 0.1f && !navMesh.pathPending)
+                if (navMesh.remainingDistance <= 3f && !navMesh.pathPending)
                 {
                     Debug.Log("家に帰った");
 

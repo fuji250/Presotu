@@ -49,21 +49,20 @@ public class OSCController : MonoBehaviour
 
             Vector3 rayPosition = new Vector3(X * num, 0.5f, Y * num);
 
-                Ray ray = new Ray(rayPosition, Vector3.down);
-                Debug.DrawRay(rayPosition, Vector3.down, Color.yellow,1f);
-                RaycastHit hit;
+            Ray ray = new Ray(rayPosition, Vector3.down);
+            Debug.DrawRay(rayPosition, Vector3.down, Color.yellow,1f);
+            RaycastHit hit;
 
-                //その地点に既にオブジェクトがある　または
-                //人間以外のレイヤーなら球は追加しない
-                if(Physics.Raycast(ray, out hit, 1)　&& hit.collider.gameObject.layer != 8)
-                { 
-                    //Debug.Log("Hit");
-                    
-                    return;
-                }
-                //Debug.Log(X + "," + Y);
-
+            //その地点にオブジェクトがなく　更に
+            //人間レイヤーなら球を追加する
+            if(!Physics.Raycast(ray, out hit, 1))
+            { 
                 Instantiate(mark, new Vector3( X * num, 0.0f, Y * num), Quaternion.identity);
+
+                //Debug.Log("Hit");
+                
+            }
+            //Debug.Log(X + "," + Y);
             
         }
         
