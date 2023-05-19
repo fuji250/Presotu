@@ -47,6 +47,11 @@ public class OSCController : MonoBehaviour
                 return;
             }
 
+            //遠すぎる値も外すß
+            if (Mathf.Abs(X) * num >= 46f || Mathf.Abs(Y) * num >= 35f)
+            {
+                return;
+            }
             Vector3 rayPosition = new Vector3(X * num, 0.5f, Y * num);
 
             Ray ray = new Ray(rayPosition, Vector3.down);
@@ -57,6 +62,7 @@ public class OSCController : MonoBehaviour
             //人間レイヤーなら球を追加する
             if(!Physics.Raycast(ray, out hit, 1))
             { 
+                
                 Instantiate(mark, new Vector3( X * num, 0.0f, Y * num), Quaternion.identity);
 
                 //Debug.Log("Hit");
