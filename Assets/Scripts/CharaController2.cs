@@ -39,6 +39,7 @@ public class CharaController2 : MonoBehaviour
     Coroutine coroutine = null;
 
 
+    public float approachSpeed;
     enum State
     {
         search,
@@ -148,6 +149,7 @@ public class CharaController2 : MonoBehaviour
                     Debug.Log("向かってます");
 
                     navMesh.isStopped = false;
+                    navMesh.speed = approachSpeed;
 
                     GameManager.instance.message.text = "向かってます";
                     beFinding = true;

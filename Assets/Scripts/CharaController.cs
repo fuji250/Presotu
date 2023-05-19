@@ -51,8 +51,6 @@ public class CharaController : MonoBehaviour
         currentState = newState;
         stateEnter = true;
         GameManager.instance.state.text = currentState.ToString();
-
-            
     }
     
     // Start is called before the first frame update
@@ -60,8 +58,6 @@ public class CharaController : MonoBehaviour
     {
         navMesh = GetComponent<NavMeshAgent>();
         mainCamera = Camera.main;
-        
-
     }
 
     // Update is called once per frame
