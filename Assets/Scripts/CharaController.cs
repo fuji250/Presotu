@@ -30,7 +30,7 @@ public class CharaController : MonoBehaviour
     //人間を探すかどうか
     private bool isSearchHuman = true;
     //現在人間を追跡しているかどうか
-    private bool isTracking = true;
+    //private bool isTracking = true;
 
     
     enum State

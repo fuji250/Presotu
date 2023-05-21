@@ -10,19 +10,14 @@ using TMPro;
 public class CharaController2 : MonoBehaviour
 {
     private NavMeshAgent navMesh;
-
-    private Vector3 clickPosition;
-
-    private Camera mainCamera;
+    
     private Vector3 currentPosition = Vector3.zero;
-
+ 
     private State currentState = State.search; //現在のステート
     private bool stateEnter = true;
-    //private bool firstSerch = true;
 
-
-    //前方に障害物があるかどうか
-    private bool existsObstacle = false;
+    public int serchNum = default;
+    public int approachDistance = default;
 
 
     //範囲に人間がいるかどうか
@@ -34,15 +29,10 @@ public class CharaController2 : MonoBehaviour
     //人間と離れたかどうか
     private bool isFar = false;
     
-    //人を見つけて見失ったか
-    private bool missingHuman = false;
-
-
-    //serchが終わったかどうか
-    //private bool isFinishedSerch = false;
 
     Coroutine serchCoroutine = null;
     Coroutine joyCoroutine = null;
+    Coroutine lostSerchCoroutine = null;
 
 
     public float approachSpeed;
@@ -50,7 +40,6 @@ public class CharaController2 : MonoBehaviour
 
     public GameObject mesh;
     
-    private Quaternion _initialRotation; // 初期回転
     
     enum State
     {
@@ -58,9 +47,8 @@ public class CharaController2 : MonoBehaviour
         moving,
         approach,
         happy,
+        lost,
         goHome,
-
-        doNothing,
     }
 
     void ChangeState(State newState)
@@ -69,33 +57,33 @@ public class CharaController2 : MonoBehaviour
         stateEnter = true;
         GameManager.instance.state.text = currentState.ToString();
         Debug.Log(currentState);
+        
+        //キョロキョロ止める
+        if (serchCoroutine != null)  
+        {
+            StopCoroutine(serchCoroutine);
+            serchCoroutine = null;
+        }
+        if (lostSerchCoroutine != null)  
+        {
+            StopCoroutine(lostSerchCoroutine);
+            lostSerchCoroutine = null;
+        }    
     }
 
     // Start is called before the first frame update
     void Start()
     {
         navMesh = GetComponent<NavMeshAgent>();
-        mainCamera = Camera.main;
-        //キョロキョロ止める
-        if (serchCoroutine != null)  
-        {
-            StopCoroutine(serchCoroutine);  
-        }
-        
-        _initialRotation = mesh.gameObject.transform.rotation; 
-
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
-        
-
         float randomXPos;
         float randomZPos;
         int PlusMinus;
 
-        //Debug.Log(navMesh.isStopped);
 
         switch (currentState)
         {
@@ -112,8 +100,11 @@ public class CharaController2 : MonoBehaviour
                         StopCoroutine(serchCoroutine);  
                     }
                     
+                    Debug.Log(serchNum);
                     // StartCoroutineの戻り値が停止させるコルーチン  
-                    serchCoroutine = StartCoroutine(Searching());  
+                    serchCoroutine = StartCoroutine(Searching(serchNum));
+
+                    serchNum = 1;
                 }
                 break;
             
@@ -148,12 +139,11 @@ public class CharaController2 : MonoBehaviour
                         randomZPos *= (-1);
                     }
 
-                    //Debug.Log(randomXPos + "," + randomZPos);
                     navMesh.SetDestination(new Vector3(randomXPos, 0, randomZPos));
                 }
                 
                 //目的地の近くまで着いたらSerchする
-                if (navMesh.remainingDistance <= 0.01f && !navMesh.pathPending)
+                if (navMesh.remainingDistance <= 0.1f && !navMesh.pathPending)
                 {
                     Debug.Log("目的地にたどり着いた");
 
@@ -179,8 +169,6 @@ public class CharaController2 : MonoBehaviour
 
                 Approach();
 
-                
-
                 break;
 
             case State.happy:
@@ -189,20 +177,39 @@ public class CharaController2 : MonoBehaviour
                     stateEnter = false;
                     Debug.Log("嬉しい！");
                     GameManager.instance.message.text = "嬉しい!";
-                    
-                    
+
+                    serchNum = 3;
                 }
                 //コルーチンを複数回さないために、既に動かしているコルーチンを止める
                 if (joyCoroutine == null)  
                 {
                     // StartCoroutineの戻り値が停止させるコルーチン  
-                    joyCoroutine = StartCoroutine(JoyTurn());  
+                    joyCoroutine = StartCoroutine(JoyDance());  
                 }
 
                 Approach();
 
                 break;
 
+            case State.lost:
+                if (stateEnter)
+                {
+                    navMesh.isStopped = true;
+
+                    stateEnter = false;
+                    Debug.Log("見失った！");
+                    GameManager.instance.message.text = "見失った!";
+                    
+                    //コルーチンを複数回さないために、既に動かしているコルーチンを止める
+                    if (lostSerchCoroutine == null)  
+                    {
+                        // StartCoroutineの戻り値が停止させるコルーチン  
+                        lostSerchCoroutine = StartCoroutine(LostSearching(2));  
+                    }
+                }
+
+                break;
+            
             case State.goHome:
                 if (stateEnter)
                 {
@@ -215,7 +222,7 @@ public class CharaController2 : MonoBehaviour
                     navMesh.SetDestination(Vector3.zero);
                 }
 
-                if (navMesh.remainingDistance <= 10f && !navMesh.pathPending)
+                if (navMesh.remainingDistance <= 7f && !navMesh.pathPending)
                 {
                     Debug.Log("家に帰った");
 
@@ -226,22 +233,8 @@ public class CharaController2 : MonoBehaviour
                 }
 
                 break;
-
-            case State.doNothing:
-                if (stateEnter)
-                {
-                    stateEnter = false;
-                    Debug.Log("何もしません");
-                    GameManager.instance.message.text = "何もしません";
-                }
-
-                break;
         }
-        
-        
         existHuman = false;
-
-
     }
 
 
@@ -294,24 +287,27 @@ public class CharaController2 : MonoBehaviour
     }
 
     //キョロキョロと周りを見渡す
-    IEnumerator Searching()
+    IEnumerator Searching(int x)
     {
-        for (int turn = 0; turn < 45; turn++)
+        for (int i = 0; i < x; i++)
         {
-            transform.Rotate(0, 1, 0);
-            yield return new WaitForSeconds(0.01f);
-        }
+            for (int turn = 0; turn < 45; turn++)
+            {
+                transform.Rotate(0, 1, 0);
+                yield return new WaitForSeconds(0.01f);
+            }
 
-        for (int turn = 0; turn < 90; turn++)
-        {
-            transform.Rotate(0, -1, 0);
-            yield return new WaitForSeconds(0.01f);
-        }
+            for (int turn = 0; turn < 90; turn++)
+            {
+                transform.Rotate(0, -1, 0);
+                yield return new WaitForSeconds(0.01f);
+            }
 
-        for (int turn = 0; turn < 45; turn++)
-        {
-            transform.Rotate(0, 1, 0);
-            yield return new WaitForSeconds(0.01f);
+            for (int turn = 0; turn < 45; turn++)
+            {
+                transform.Rotate(0, 1, 0);
+                yield return new WaitForSeconds(0.01f);
+            }
         }
         
         if (currentState == State.search)
@@ -320,9 +316,48 @@ public class CharaController2 : MonoBehaviour
         }
         yield break;
     }
+    
+    IEnumerator LostSearching(int x)
+    {
+        int randomX = Random.Range(1,4);
+        float waitNum = Random.Range(0.3f, 1f);
+        
+        yield return new WaitForSeconds(1f);
+        
+        for (int i = 0; i < x; i++)
+        {
+            for (int turn = 0; turn < 45/randomX; turn++)
+            {
+                transform.Rotate(0, randomX, 0);
+                yield return new WaitForSeconds(0.01f);
+            }
+            
+            yield return new WaitForSeconds(waitNum);
+
+            for (int turn = 0; turn < 90/randomX; turn++)
+            {
+                transform.Rotate(0, -randomX, 0);
+                yield return new WaitForSeconds(0.01f);
+            }
+            
+            yield return new WaitForSeconds(waitNum);
+
+
+            for (int turn = 0; turn < 45/randomX; turn++)   
+            {
+                transform.Rotate(0, randomX, 0);
+                yield return new WaitForSeconds(0.01f);
+            }
+            yield return new WaitForSeconds(waitNum);
+
+        }
+        ChangeState(State.goHome);
+        
+        yield break;
+    }
 
     //人の近くにたどり着くと回転して喜ぶ
-    IEnumerator JoyTurn()
+    IEnumerator JoyDance()
     {
         for (int turn = 0; turn < 22.5f; turn++)
         {
@@ -345,17 +380,12 @@ public class CharaController2 : MonoBehaviour
             yield return new WaitForSeconds(0.01f);
         }
 
-        //ゼロにリセット
-        //Vector3 target = new Vector3(0, 0, 0);
-        //mesh.transform.LookAt(target);
-        //mesh.transform.rotation = _initialRotation;
-
         joyCoroutine = null;
-        if (existHuman)
+        //人がいなくなったらApproachに移行
+        if (!existHuman)
         {
-            yield break;
+            ChangeState(State.lost);
         }
-        ChangeState(State.approach);
     }
 
     void Approach()
@@ -364,7 +394,7 @@ public class CharaController2 : MonoBehaviour
 
         if (isFar)
         {
-            if (navMesh.remainingDistance <= 3f && !navMesh.pathPending)
+            if (navMesh.remainingDistance <= approachDistance && !navMesh.pathPending)
             {
                 isFar = false;
 

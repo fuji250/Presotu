@@ -13,48 +13,21 @@ using TMPro;
 public class EscapeCubeController : MonoBehaviour
 {
     private NavMeshAgent navMesh;
-
-    private Vector3 clickPosition;
-
-    private Camera mainCamera;
+    
     private Vector3 currentPosition = Vector3.zero;
 
     private State currentState = State.search; //現在のステート
     private bool stateEnter = true;
-    //private bool firstSerch = true;
-
-
-    //前方に障害物があるかどうか
-    private bool existsObstacle = false;
-
 
     //範囲に人間がいるかどうか
     private bool existHuman = false;
 
-    //一度人を見つけて追いかけているかどうか
-    private bool beFinding = false;
-    
-    //人間と離れたかどうか
-    private bool isFar = false;
-    
-    //人を見つけて見失ったか
-    private bool missingHuman = false;
-
-
-    //serchが終わったかどうか
-    //private bool isFinishedSerch = false;
 
     Coroutine serchCoroutine = null;
-    Coroutine joyCoroutine = null;
-
 
     public float approachSpeed;
     public float movingSpeed;
 
-    public GameObject mesh;
-    
-    
-    
     [SerializeField,Range(5,30)] private float _runAwayDistance = 10f;
 
     public GameObject sphere;
@@ -86,22 +59,16 @@ public class EscapeCubeController : MonoBehaviour
     void Start()
     {
         navMesh = GetComponent<NavMeshAgent>();
-        mainCamera = Camera.main;
         //キョロキョロ止める
         if (serchCoroutine != null)  
         {
             StopCoroutine(serchCoroutine);  
         }
-        
-        _initialRotation = mesh.gameObject.transform.rotation; 
-
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
-        
-
         float randomXPos;
         float randomZPos;
         int PlusMinus;
@@ -184,20 +151,17 @@ public class EscapeCubeController : MonoBehaviour
                     navMesh.speed = approachSpeed;
 
                     GameManager.instance.message.text = "向かってます";
-                    beFinding = true;
                     
                 }
 
-                Approach();
+                Escape();
 
                 
 
                 break;
         }
-        
-        
-        existHuman = false;
 
+        existHuman = false;
 
     }
 
@@ -258,30 +222,10 @@ public class EscapeCubeController : MonoBehaviour
 
     
 
-    void Approach()
+    void Escape()
     {
         navMesh.SetDestination(currentPosition);
 
-        /*
-        if (isFar)
-        {
-            if (navMesh.remainingDistance >= 50f && !navMesh.pathPending)
-            {
-                isFar = false;
-
-                Debug.Log("人から離れた");
-
-                ChangeState(State.search);
-                return;
-            }
-        }
-
-        if (navMesh.remainingDistance > 3f && !navMesh.pathPending)
-        {
-            isFar = true;
-        }
-
-*/
         //範囲に人がいなくなったら
         if (!existHuman)
         {
