@@ -24,22 +24,34 @@ public class CharaController2 : MonoBehaviour
     //前方に障害物があるかどうか
     private bool existsObstacle = false;
 
-    //人間を探すかどうか
-    private bool isSearchHuman = true;
 
     //範囲に人間がいるかどうか
     private bool existHuman = false;
 
     //一度人を見つけて追いかけているかどうか
     private bool beFinding = false;
+    
+    //人間と離れたかどうか
+    private bool isFar = false;
+    
+    //人を見つけて見失ったか
+    private bool missingHuman = false;
+
 
     //serchが終わったかどうか
     //private bool isFinishedSerch = false;
 
-    Coroutine coroutine = null;
+    Coroutine serchCoroutine = null;
+    Coroutine joyCoroutine = null;
 
 
     public float approachSpeed;
+    public float goHomeSpeed;
+
+    public GameObject mesh;
+    
+    private Quaternion _initialRotation; // 初期回転
+    
     enum State
     {
         search,
@@ -56,6 +68,7 @@ public class CharaController2 : MonoBehaviour
         currentState = newState;
         stateEnter = true;
         GameManager.instance.state.text = currentState.ToString();
+        Debug.Log(currentState);
     }
 
     // Start is called before the first frame update
@@ -63,18 +76,26 @@ public class CharaController2 : MonoBehaviour
     {
         navMesh = GetComponent<NavMeshAgent>();
         mainCamera = Camera.main;
+        //キョロキョロ止める
+        if (serchCoroutine != null)  
+        {
+            StopCoroutine(serchCoroutine);  
+        }
+        
+        _initialRotation = mesh.gameObject.transform.rotation; 
+
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
-        existHuman = false;
+        
 
         float randomXPos;
         float randomZPos;
         int PlusMinus;
 
-        Debug.Log(navMesh.isStopped);
+        //Debug.Log(navMesh.isStopped);
 
         switch (currentState)
         {
@@ -86,13 +107,13 @@ public class CharaController2 : MonoBehaviour
                     GameManager.instance.message.text = "キョロキョロ";
                     
                     //コルーチンを複数回さないために、既に動かしているコルーチンを止める
-                    if (coroutine != null)  
+                    if (serchCoroutine != null)  
                     {
-                        StopCoroutine(coroutine);  
+                        StopCoroutine(serchCoroutine);  
                     }
                     
                     // StartCoroutineの戻り値が停止させるコルーチン  
-                    coroutine = StartCoroutine(Searching());  
+                    serchCoroutine = StartCoroutine(Searching());  
                 }
                 break;
             
@@ -156,17 +177,9 @@ public class CharaController2 : MonoBehaviour
                     
                 }
 
-                navMesh.SetDestination(currentPosition);
+                Approach();
 
-                if (navMesh.remainingDistance <= 3f && !navMesh.pathPending)
-                {
-                    Debug.Log("人にたどり着いた");
-
-                    ChangeState(State.happy);
-                    navMesh.isStopped = true;
-                    return;
-                }
-                //Debug.Log(navMesh.remainingDistance);
+                
 
                 break;
 
@@ -176,8 +189,17 @@ public class CharaController2 : MonoBehaviour
                     stateEnter = false;
                     Debug.Log("嬉しい！");
                     GameManager.instance.message.text = "嬉しい!";
-                    StartCoroutine("JoyTurn");
+                    
+                    
                 }
+                //コルーチンを複数回さないために、既に動かしているコルーチンを止める
+                if (joyCoroutine == null)  
+                {
+                    // StartCoroutineの戻り値が停止させるコルーチン  
+                    joyCoroutine = StartCoroutine(JoyTurn());  
+                }
+
+                Approach();
 
                 break;
 
@@ -189,10 +211,11 @@ public class CharaController2 : MonoBehaviour
                     Debug.Log("お家に帰る");
                     GameManager.instance.message.text = "お家に帰る";
 
+                    navMesh.speed = goHomeSpeed;
                     navMesh.SetDestination(Vector3.zero);
                 }
 
-                if (navMesh.remainingDistance <= 3f && !navMesh.pathPending)
+                if (navMesh.remainingDistance <= 10f && !navMesh.pathPending)
                 {
                     Debug.Log("家に帰った");
 
@@ -214,6 +237,11 @@ public class CharaController2 : MonoBehaviour
 
                 break;
         }
+        
+        
+        existHuman = false;
+
+
     }
 
 
@@ -237,29 +265,26 @@ public class CharaController2 : MonoBehaviour
 
     public void OnDetectHuman(Collider collider)
     {
-        if (isSearchHuman)
+        if (collider.gameObject.layer == 8)
         {
-            if (collider.gameObject.layer == 8)
+            existHuman = true;
+
+            // 衝突位置を取得する
+            Vector3 hitPos = collider.transform.position;
+            //navMesh.SetDestination(hitPos);
+            currentPosition = hitPos;
+
+            //既に人間を追跡しているなら以下の処理を飛ばす
+            if (currentState == State.approach || currentState == State.happy)
             {
-                existHuman = true;
-
-                // 衝突位置を取得する
-                Vector3 hitPos = collider.transform.position;
-                //navMesh.SetDestination(hitPos);
-                currentPosition = hitPos;
-
-                //既に人間を追跡しているなら以下の処理を飛ばす
-                if (currentState == State.approach || currentState == State.happy)
-                {
-                    return;
-                }
-
-                Debug.Log("人を見つけた");
-
-                GameManager.instance.message.text = "人を見つけた";
-
-                ChangeState(State.approach);
+                return;
             }
+
+            Debug.Log("人を見つけた");
+
+            GameManager.instance.message.text = "人を見つけた";
+
+            ChangeState(State.approach);
         }
     }
 
@@ -288,7 +313,7 @@ public class CharaController2 : MonoBehaviour
             transform.Rotate(0, 1, 0);
             yield return new WaitForSeconds(0.01f);
         }
-
+        
         if (currentState == State.search)
         {
             ChangeState(State.moving);
@@ -299,15 +324,71 @@ public class CharaController2 : MonoBehaviour
     //人の近くにたどり着くと回転して喜ぶ
     IEnumerator JoyTurn()
     {
-        isSearchHuman = false;
-        for (int turn = 0; turn < 135; turn++)
+        for (int turn = 0; turn < 22.5f; turn++)
         {
-            transform.Rotate(0, 3, 0);
+            mesh.transform.Rotate(0, 2, 0);
+            yield return new WaitForSeconds(0.01f);
+        }
+        for (int turn = 0; turn < 45; turn++)
+        {
+            mesh.transform.Rotate(0, -2, 0);
+            yield return new WaitForSeconds(0.01f);
+        }
+        for (int turn = 0; turn < 45; turn++)
+        {
+            mesh.transform.Rotate(0, 2, 0);
+            yield return new WaitForSeconds(0.01f);
+        }
+        for (int turn = 0; turn < 22.5f; turn++)
+        {
+            mesh.transform.Rotate(0, -2, 0);
             yield return new WaitForSeconds(0.01f);
         }
 
-        isSearchHuman = true;
-        ChangeState(State.search);
+        //ゼロにリセット
+        //Vector3 target = new Vector3(0, 0, 0);
+        //mesh.transform.LookAt(target);
+        //mesh.transform.rotation = _initialRotation;
+
+        joyCoroutine = null;
+        if (existHuman)
+        {
+            yield break;
+        }
+        ChangeState(State.approach);
+    }
+
+    void Approach()
+    {
+        navMesh.SetDestination(currentPosition);
+
+        if (isFar)
+        {
+            if (navMesh.remainingDistance <= 3f && !navMesh.pathPending)
+            {
+                isFar = false;
+
+                Debug.Log("人にたどり着いた");
+
+                //StartCoroutine("JoyTurn");
+
+                ChangeState(State.happy);
+                //navMesh.isStopped = true;
+                return;
+            }
+        }
+
+        if (navMesh.remainingDistance > 3f && !navMesh.pathPending)
+        {
+            isFar = true;
+        }
+                
+
+        //人を見失ったらSerchする
+        if (!existHuman)
+        {
+            ChangeState(State.search);
+        }
     }
 
     void OnDrawGizmos()
