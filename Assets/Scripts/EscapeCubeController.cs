@@ -30,8 +30,6 @@ public class EscapeCubeController : MonoBehaviour
 
     [SerializeField,Range(5,30)] private float _runAwayDistance = 10f;
 
-    public GameObject sphere;
-
 
     /// <summary>
     /// プレイヤーが近くにいるかどうかのReactiveProperty
@@ -39,6 +37,9 @@ public class EscapeCubeController : MonoBehaviour
     private readonly ReactiveProperty<bool> _isNearPlayerReactiveProperty = new ReactiveProperty<bool>();
     
     private Quaternion _initialRotation; // 初期回転
+
+    public bool pullWalk;
+    private int count;
     
     enum State
     {
@@ -123,8 +124,26 @@ public class EscapeCubeController : MonoBehaviour
 
                     //Debug.Log(randomXPos + "," + randomZPos);
                     navMesh.SetDestination(new Vector3(randomXPos, 0, randomZPos));
+                    
+                    count = 0;
+
                 }
                 
+                if (pullWalk)
+                {
+                    if (count % 50 == 0)
+                    {
+                        //ここに処理
+                        navMesh.isStopped = true;
+                    }
+                    if (count % 100 == 0)
+                    {
+                        navMesh.isStopped = false;
+                        count = 0;
+
+                    }
+                    count++; // カウントアップ
+                }                
                 //目的地の近くまで着いたらSerchする
                 if (navMesh.remainingDistance <= 0.01f && !navMesh.pathPending)
                 {
@@ -151,9 +170,10 @@ public class EscapeCubeController : MonoBehaviour
                     navMesh.speed = approachSpeed;
 
                     GameManager.instance.message.text = "向かってます";
-                    
+
                 }
 
+                
                 Escape();
 
                 

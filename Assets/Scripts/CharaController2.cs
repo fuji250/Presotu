@@ -28,18 +28,26 @@ public class CharaController2 : MonoBehaviour
     
     //人間と離れたかどうか
     private bool isFar = false;
-    
+
+    private bool lastOdo = false;
+
 
     Coroutine serchCoroutine = null;
     Coroutine joyCoroutine = null;
     Coroutine lostSerchCoroutine = null;
+    Coroutine odoodoCoroutine = null;
 
 
     public float approachSpeed;
     public float goHomeSpeed;
 
     public GameObject mesh;
+
+    public bool coward;
+    public bool pullWalk;
     
+    int count = 0;
+
     
     enum State
     {
@@ -68,7 +76,8 @@ public class CharaController2 : MonoBehaviour
         {
             StopCoroutine(lostSerchCoroutine);
             lostSerchCoroutine = null;
-        }    
+        }
+
     }
 
     // Start is called before the first frame update
@@ -165,7 +174,38 @@ public class CharaController2 : MonoBehaviour
                     GameManager.instance.message.text = "向かってます";
                     beFinding = true;
                     
+                    
+                    //コルーチンを複数回さないために、既に動かしているコルーチンを止める
+                    if (odoodoCoroutine != null)  
+                    {
+                        StopCoroutine(odoodoCoroutine);  
+                    }
+                    if (coward)
+                    {
+                        odoodoCoroutine = StartCoroutine(OdoOdo());
+                    }
+                    
+                    count = 0;
                 }
+
+                if (pullWalk)
+                {
+                    if (count % 25 == 0)
+                    {
+                        //ここに処理
+                        navMesh.isStopped = true;
+                    }
+                    if (count % 50 == 0)
+                    {
+                        navMesh.isStopped = false;
+                        count = 0;
+
+                    }
+                    count++; // カウントアップ
+                }
+                
+                
+
 
                 Approach();
 
@@ -179,6 +219,9 @@ public class CharaController2 : MonoBehaviour
                     GameManager.instance.message.text = "嬉しい!";
 
                     serchNum = 3;
+                    
+                    lastOdo = true;
+
                 }
                 //コルーチンを複数回さないために、既に動かしているコルーチンを止める
                 if (joyCoroutine == null)  
@@ -386,6 +429,46 @@ public class CharaController2 : MonoBehaviour
         {
             ChangeState(State.lost);
         }
+    }
+    
+    IEnumerator OdoOdo()
+    {
+        for (int turn = 0; turn < 10f; turn++)
+        {
+            mesh.transform.Rotate(0, 4, 0);
+            mesh.transform.Translate (0.001f, 0, 0);
+
+            yield return new WaitForSeconds(0.01f);
+        }
+        for (int turn = 0; turn < 20; turn++)
+        {
+            mesh.transform.Rotate(0, -4, 0);
+            mesh.transform.Translate (-0.001f, 0, 0);
+
+            yield return new WaitForSeconds(0.01f);
+        }
+        for (int turn = 0; turn < 20; turn++)
+        {
+            mesh.transform.Rotate(0, 4, 0);
+            mesh.transform.Translate (0.001f, 0, 0);
+
+            yield return new WaitForSeconds(0.01f);
+        }
+        for (int turn = 0; turn < 10f; turn++)
+        {
+            mesh.transform.Rotate(0, -4, 0);
+            mesh.transform.Translate (-0.001f, 0, 0);
+
+            yield return new WaitForSeconds(0.01f);
+        }
+
+        if (lastOdo)
+        {　
+            lastOdo = false;
+            //ここの関数終了宣言
+            yield break;
+        }
+        StartCoroutine("OdoOdo");
     }
 
     void Approach()
