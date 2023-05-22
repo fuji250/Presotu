@@ -42,7 +42,7 @@ public class OSCController : MonoBehaviour
 
 
             //センサーに近づぎる値は外す
-            if (Mathf.Abs(X) <= 0.1f && Mathf.Abs(Y) <= 0.1f)
+            if (Mathf.Abs(X) * num <= 24f && Mathf.Abs(Y) * num <= 15f)
             {
                 return;
             }

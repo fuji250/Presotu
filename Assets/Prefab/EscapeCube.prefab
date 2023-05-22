@@ -178,7 +178,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 50c1b37d094983747b508f9101ac5621, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  approachSpeed: 10
+  approachSpeed: 20
   movingSpeed: 5
   _runAwayDistance: 10
   sphere: {fileID: 0}
